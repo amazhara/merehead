@@ -20,9 +20,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('register', 'UserController@register');
 Route::post('login', 'UserController@authenticate');
+Route::get('authors', 'AuthorController@getAuthorsList');
 Route::get('open', 'DataController@open');
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('user', 'UserController@getAuthenticatedUser');
     Route::get('closed', 'DataController@closed');
+    Route::post('add-book', 'BookController@add');
 });
