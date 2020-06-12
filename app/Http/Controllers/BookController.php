@@ -38,7 +38,7 @@ class BookController extends Controller
             'name' => 'required|string|max:255|unique:books',
             'pages_number' => 'required|string',
             'annotation' => 'required|string|unique:books',
-            'author_name' => 'required|string',
+            'author_name' => 'required|string|exists:authors,name',
             'image' => 'required|base64image',
         ]);
 
