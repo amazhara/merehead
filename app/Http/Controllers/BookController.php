@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Storage;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Book;
@@ -14,24 +16,58 @@ use App\Http\Controllers\UserController;
 
 class BookController extends Controller
 {
+    // Returns image name
+    // Stores image in public Storage
+    private function saveImage($image_64)
+    {
+        $extension = explode('/', explode(':', substr($image_64, 0, strpos($image_64, ';')))[1])[1];   // .jpg .png .pdf
+        $replace = substr($image_64, 0, strpos($image_64, ',')+1); 
+      
+        // find substring fro replace here eg: data:image/png;base64,
+        $image = str_replace($replace, '', $image_64);
+        $image = str_replace(' ', '+', $image); 
+        $imageName = Str::random(10).'.'.$extension;
+        
+        Storage::disk('public')->put($imageName, base64_decode($image));
+        return $imageName;
+    }
+
     public function add(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            // 'user_id' => 'required|unique:users',
             'name' => 'required|string|max:255|unique:books',
             'pages_number' => 'required|string',
             'annotation' => 'required|string|unique:books',
-            'author_id' => 'required|unique:authors',
-            // 'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'author_name' => 'required|string',
+            'image' => 'required|base64image',
         ]);
 
-        // if ($validator->fails()) {
-        //     return response()->json($validator->errors()->toJson(), 400);
-        // }
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
 
-        $r = Http::withToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9tZXJlaGVhZC50ZXN0XC9hcGlcL2xvZ2luIiwiaWF0IjoxNTkxODU1Mjg5LCJleHAiOjE1OTE4NTg4ODksIm5iZiI6MTU5MTg1NTI4OSwianRpIjoiZ0U1ZEQzVVhOT1dpam5rbSIsInN1YiI6MSwicHJ2IjoiODdlMGFmMWVmOWZkMTU4MTJmZGVjOTcxNTNhMTRlMGIwNDc1NDZhYSJ9.Re6dJUPLSJcOi0DpOx8QRH0aP32d8cSNBH7lC-k295Y')
-        ->get('merehead.test/api/user')->throw()->json();
+        // Save image to file
+        $image = $this->saveImage($request->get('image'));
 
-        return response()->json($r);
+        // Get current user
+        $user = JWTAuth::toUser();
+
+        $book = Book::create([
+            'user_id' => $user['id'],
+            'name' => $request->get('name'),
+            'pages_number' => $request->get('pages_number'),
+            'annotation' => $request->get('annotation'),
+            'image' => $image,
+            'author_name' => $request->get('author_name'),
+        ]);
+
+        return response()->json(compact('book'));
+    }
+
+    public function getBooksList()
+    {
+        $books = Book::all();
+
+        return response()->json(compact('books'));
     }
 }

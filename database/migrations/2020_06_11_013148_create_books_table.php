@@ -20,7 +20,7 @@ class CreateBooksTable extends Migration
             $table->unsignedBigInteger('pages_number');
             $table->string('annotation');
             $table->string('image');
-            $table->foreignId('author_id');
+            $table->string('author_name');
             $table->timestamps();
         });
     }
