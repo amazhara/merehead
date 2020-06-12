@@ -30,5 +30,6 @@ Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('closed', 'DataController@closed');
     Route::post('add-book', 'BookController@add');
     Route::get('my-books', 'UserController@getBooksList');
-    Route::get('books/{book}/edit', 'BookController@edit');
+    Route::post('books/{book}/edit', 'BookController@edit');
+    Route::get('books/{book}/delete', 'BookController@delete');
 });

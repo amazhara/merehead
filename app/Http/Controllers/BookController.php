@@ -99,4 +99,14 @@ class BookController extends Controller
 
         return response()->json(compact('book'));
     }
+
+    public function delete($book_name)
+    {
+        $user = JWTAuth::toUser();
+        $book = Book::where('name', $book_name)->where('user_id', '=', $user['id'])->firstOrFail();
+
+        $book->delete();
+
+        return response()->json(compact('book'), 200);
+    }
 }
