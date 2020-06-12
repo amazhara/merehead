@@ -70,4 +70,33 @@ class BookController extends Controller
 
         return response()->json(compact('books'));
     }
+
+    public function edit($book_name)
+    {
+        $validator = Validator::make(request()->all(), [
+            'name' => 'required|string|max:255|unique:books',
+            'pages_number' => 'required|string',
+            'annotation' => 'required|string|unique:books',
+            'author_name' => 'required|string|exists:authors,name',
+            'image' => 'required|base64image',
+        ]);
+
+        $user = JWTAuth::toUser();
+
+        $book = Book::where('name', $book_name)->where('user_id', '=', $user['id'])->firstOrFail();
+
+        // Save image to file
+        $image = $this->saveImage(request()->get('image'));
+
+        $book->Update([
+            'user_id' => $user['id'],
+            'name' => request()->get('name'),
+            'pages_number' => request()->get('pages_number'),
+            'annotation' => request()->get('annotation'),
+            'image' => $image,
+            'author_name' => request()->get('author_name'),
+        ]);
+
+        return response()->json(compact('book'));
+    }
 }
