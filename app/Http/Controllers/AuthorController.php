@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Author;
+use App\Book;
 
 class AuthorController extends Controller
 {
@@ -16,5 +17,12 @@ class AuthorController extends Controller
         $authors = Author::all();
 
         return response()->json(compact('authors'));
+    }
+
+    public function getBooksList($author)
+    {
+        $books = Book::where('author_name' , $author)->get();
+
+        return response()->json(compact('books'));
     }
 }

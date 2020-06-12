@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Book;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -72,5 +73,15 @@ class UserController extends Controller
             }
 
             return response()->json(compact('user'));
+    }
+
+    public function getBooksList()
+    {
+        // Get user
+        $user = JWTAuth::toUser();
+        // Fetch books
+        $books = Book::where('user_id' , $user['id'])->get();
+        
+        return response()->json(compact('books'));
     }
 }
